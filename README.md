@@ -64,3 +64,59 @@ Componentes requeridos
 * Conexión de cables
 
 
+# Funciones
+* Registro de desplazamiento de 8 bits, entrada en serie y salida en paralelo
+* Tensión de funcionamiento: 2V a 6V
+* Consumo de energía: 80uA
+* Corriente de salida: 35mA
+* La tensión de salida es igual a la tensión de funcionamiento
+
+
+# Proyecto
+Configuración fácil que maneja 8 LED.
+
+![image](https://user-images.githubusercontent.com/71289132/227318541-bd9616bc-bcdc-41f6-bf0a-3738c8a4e5d8.png)
+
+
+```python
+from machine import Pin
+import utime
+import random
+
+#define PINs according to cabling
+dataPIN = 13
+latchPIN = 15
+clockPIN = 14
+
+#Realizamos dos acciones con cada línea. Cada línea convierte la variable dataPIN, 
+dataPIN=Pin(dataPIN, Pin.OUT)
+latchPIN=Pin(latchPIN, Pin.OUT)
+clockPIN=Pin(clockPIN, Pin.OUT)
+
+#Transmitimos datos en orden inverso porque la salida Q7 debe ingresar primero al puerto de datos,
+def shift_update(input,data,clock,latch):
+  #hacia abajo para iniciar el envío de datos
+  clock.value(0)
+  latch.value(0)
+  clock.value(1)
+  
+  #Cargar datos en orden inverso
+  for i in range(7, -1, -1):
+    clock.value(0)
+    data.value(int(input[i]))
+    clock.value(1)
+
+#almacenar datos en el registro
+  clock.value(0)
+  latch.value(1)
+  clock.value(1)
+
+#Con esta función disponible, si desea (por ejemplo) establecer todas las salidas en 0, puede usar simplemente:
+bit_string="00000000"
+
+while True:
+    shift_update(bit_string,dataPIN,clockPIN,latchPIN)
+    bit_string = str(random.randint(0, 1))+bit_string[:-1]
+    utime.sleep(0.3)
+    
+```
